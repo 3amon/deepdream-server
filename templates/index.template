@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Deep Dreaming</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="static/css/2-col-portfolio.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="static/css/jquery.fileupload.css">
+
+    <!-- jQuery -->
+    <script src="static/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <script src="static/js/vendor/jquery.ui.widget.js"></script>
+    <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+    <script src="static/js/jquery.iframe-transport.js"></script>
+    <!-- The basic File Upload plugin -->
+    <script src="static/js/jquery.fileupload.js"></script>
+
+    <style>
+        #upload{
+            display:none
+        }
+    </style>
+
+    <script>
+
+    function getDescriptionQuery( name ) {
+        return "#description-" + name.replace( /(:|\.|\[|\]|,)/g, "\\$1" );
+    }
+
+    function doPoll(){
+        $.get('processing-status', function(data) {
+            var states = JSON.parse(data)
+            for (var i = 0, len = states.length; i < len; i++) {
+                state = states[i];               
+                var searchstring = getDescriptionQuery(state.name);
+                var obj = $(searchstring);
+                var html = '<p>' + state.state + '</p>'
+                $(searchstring).html(html);
+            }
+        });
+        setTimeout(doPoll,5000);
+    }
+
+    doPoll();
+
+    /*jslint unparam: true */
+    /*global window, $ */
+    $(function () {
+        'use strict';
+        // Change this to the location of your server-side upload handler:
+        var url = 'upload';
+        $('#fileupload').fileupload({
+            url: url,
+            dataType: 'json',
+            done: function (e, data) {
+                $.each(data.result.files, function (index, file) {
+                    $('<p/>').text(file.name).appendTo('#files');
+                });
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .progress-bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+    </script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Deep Dreaming</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <!-- The fileinput-button span is used to style the file input field as button -->
+                        <span class="btn btn-success fileinput-button">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            <span>Select files...</span>
+                            <!-- The file input field used as target for the file upload widget -->
+                            <input id="fileupload" type="file" accept="image/*" name="files[]" multiple>
+                        </span>
+                        <!-- The global progress bar -->
+                        <div id="progress" class="progress">
+                            <div class="progress-bar progress-bar-success"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Pictures
+                    <small>/ Dreams</small>
+                </h1>
+            </div>
+        </div>
+        <!-- /.row -->
+
+        {% for pictureRow in pictureGrid %}
+            <!-- Projects Row -->
+            <div class="row">
+            {% for picture in pictureRow %}
+                <div class="col-md-6 portfolio-item">
+                    <a href="{{picture.convertedPath}}">
+                        <img class="img-responsive" src="{{ picture.origionalPath }}" alt="">
+                    </a>
+                    <h3>
+                        <a href="{{picture.origionalPath}}">{{ picture.filename }}</a>
+                    </h3>
+                    <div id="description-{{picture.filename}}"></div>
+                </div>
+            {% endfor %}
+            </div>
+            <!-- /.row -->
+        {% endfor %}
+
+        <hr>
+
+        <!-- Pagination -->
+          <!-- <div class="row text-center">
+            <div class="col-lg-12">
+                <ul class="pagination">
+                    <li>
+                        <a href="#">&laquo;</a>
+                    </li>
+                    <li class="active">
+                        <a href="#">1</a>
+                    </li>
+                    <li>
+                        <a href="#">2</a>
+                    </li>
+                    <li>
+                        <a href="#">3</a>
+                    </li>
+                    <li>
+                        <a href="#">4</a>
+                    </li>
+                    <li>
+                        <a href="#">5</a>
+                    </li>
+                    <li>
+                        <a href="#">&raquo;</a>
+                    </li>
+                </ul>
+            </div>
+        </div> -->
+        <!-- /.row -->
+
+        <hr>
+
+        <!-- Footer -->
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>Copyright &copy; Your Website 2014</p>
+                </div>
+            </div>
+            <!-- /.row -->
+        </footer>
+
+    </div>
+    <!-- /.container -->
+
+
+
+</body>
+
+</html>
